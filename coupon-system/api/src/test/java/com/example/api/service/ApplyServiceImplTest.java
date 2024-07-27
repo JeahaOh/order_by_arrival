@@ -25,6 +25,7 @@ class ApplyServiceImplTest {
         applyService.apply(1L);
 
         long count = couponRepository.count();
+        System.out.println("count : "+ count);
 
         assertThat(count).isEqualTo(1);
     }
@@ -37,6 +38,7 @@ class ApplyServiceImplTest {
 
         for (int i = 0; i < threadCount; i++) {
             long userId = i;
+            System.out.println("user id : " + userId);
             executorService.submit(() -> {
                 try {
                     applyService.apply(userId);
@@ -48,7 +50,40 @@ class ApplyServiceImplTest {
 
         latch.await();
 
+        Thread.sleep(1000);
+
         long count = couponRepository.count();
+        System.out.println("count : " + count);
+
         assertThat(count).isEqualTo(100);
+    }
+
+    @Test
+    public void 인당_한개의_쿠폰_발급() throws InterruptedException {
+        int userCount = 1;
+        int threadCount = 1000;
+        ExecutorService executorService = Executors.newFixedThreadPool(32);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+
+        for (int i = 0; i < threadCount; i++) {
+            long userId = 1;
+            System.out.println("user id : " + userId);
+            executorService.submit(() -> {
+                try {
+                    applyService.apply(userId);
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await();
+
+        Thread.sleep(1000);
+
+        long count = couponRepository.count();
+        System.out.println("count : " + count);
+
+        assertThat(count).isEqualTo(userCount);
     }
 }

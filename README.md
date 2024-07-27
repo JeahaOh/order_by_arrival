@@ -99,3 +99,48 @@ application.yml
 
 - 단기간에 많은 요청이 들어와 트래픽이 몰릴 경우 부하 발생과 서비스 오류의 위험가능
 - nGrinder로 부하테스트시 검증 가능 
+
+---
+
+## Apache Kafka를 이용하여 문제 해결
+
+### Docker Compose
+
+```shell
+  docker-compose -v
+  brew install cask docker-compose
+  docker-compose -v
+
+  cd kafka
+  # 카프카 실행
+  docker-compose -up -d
+
+  # 카프카 종료
+  docker-compose down
+```
+
+### Apacke Kafka
+
+- 분산 이벤트 스트리밍 플랫폼
+- 이벤트 스트리밍 : 소스에서 목적지까지 이벤트를 실시간으로 스트리밍 하는 것
+- Topic :  
+  Queue
+- Producer :  
+  Topic에 데이터 삽입
+- Consumer :  
+  Topic에 데이터를 꺼내감
+
+- 토픽 생성  
+  ```shell
+    docker exec -it kafka kafka-topics.sh --bootstrap-server localhost:9092 --create --topic coupon_create
+  ```
+- 프로듀서 실행  
+  ```shell
+    docker exec -it kafka kafka-console-producer.sh --topic coupon_create --broker-list 0.0.0.0:9092
+  ```
+- 컨슈머 실행  
+  ```shell
+    docker exec -it kafka kafka-console-consumer.sh --topic coupon_create --bootstrap-server localhost:9092
+  ```
+
+### Producer, Consumer를 이용, 쿠폰 발급하기
