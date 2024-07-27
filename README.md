@@ -2,6 +2,8 @@
 
 redis와 kafka를 이용한 선착순 이벤트 시스템 예제
 
+
+
 ## 환경 셋팅
 
 ## Docker
@@ -32,7 +34,11 @@ https://www.docker.com/
   use coupon_example;
 ```
 
-## 프로젝트 셋팅
+---
+
+## 쿠폰 프로젝트 
+
+### 프로젝트 셋팅
 
 application.yml
 
@@ -49,7 +55,7 @@ application.yml
       password: 1234
 ```
 
-## 요구사항 정의
+### 요구사항 정의
 
 선착순 100명에게 할인쿠폰을 제공하는 이벤트를 진행하고자 한다.  
   
@@ -59,4 +65,37 @@ application.yml
 - 101개 이상이 지급되면 안된다.
 - 순간적으로 몰리는 트래픽을 버틸 수 있어야합니다.
 
+### 문제점
 
+- 쿠폰이 100개만 발급되어야 하지만 그 이상 발급 됨.
+- race condition; 경쟁상태  
+  둘 이상의 입력 또는 조작의 타이밍이나 순서 등이 결과값에 영향을 줄 수 있는 상태.  
+  입력 변화의 타이밍이나 순서가 예상과 다르게 작동하면 정상적인 결과가 나오지 않게 될 위험이 있음, 이를 경쟁 위험이라 함.
+
+---
+
+## Redis를 활용하여 문제 해결
+
+### Redis 셋팅
+
+```shell
+  docker pull redis
+  docker run -d -p 6379:6379 redis
+```
+
+```shell
+  docker ps
+
+  docker exec -it 44d7f23b3034 redis-cli
+  127.0.0.1:6379> incr coupon_count
+  (integer) 1
+  127.0.0.1:6379> incr coupon_count
+  (integer) 2
+  127.0.0.1:6379> incr coupon_count
+  (integer) 3
+```
+
+### redis 사용의 문제점
+
+- 단기간에 많은 요청이 들어와 트래픽이 몰릴 경우 부하 발생과 서비스 오류의 위험가능
+- nGrinder로 부하테스트시 검증 가능 
